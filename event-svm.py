@@ -88,7 +88,7 @@ def load_data(filename):
         train = pd.DataFrame(d)
     return train
 
-def training():
+def create_model():
     vectorizer = TfidfVectorizer(ngram_range=(1, 1), max_df=0.7, min_df=2, max_features=1000)
     train = load_data('general_data/train.txt')
     train_text = train["text"].values
@@ -100,9 +100,9 @@ def training():
     fit1(X_train, y_train)
 
 def fit1(X_train,y_train):
-    uni_big = SVC(kernel='rbf', C=1000)
-    uni_big.fit(X_train, y_train)
-    joblib.dump(uni_big, 'model/svm.pkl')
+    svm = SVC(kernel='rbf', C=1000)
+    svm.fit(X_train, y_train)
+    joblib.dump(svm, 'model/svm.pkl')
 
 def predict_ex(mes):
     svm = load_model('model/svm.pkl')
@@ -170,9 +170,10 @@ def train_main():
     print "confuse matrix: \n", confusion_matrix(y_test, y_pred, labels=["EVENT", "NEVENT"])
 
 if __name__ == '__main__':
-    train_main()
-    # training()
+    # train_main()
 
+    create_model()
+    
     # mes = raw_input("Custom input: ")
     # kq = predict_ex(mes)
     # print "Result: " + kq
