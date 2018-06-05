@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score
 import datetime
 import pandas as pd
 import time
+import sys
 import os
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -90,7 +91,14 @@ def load_data(filename):
 
 def create_model():
     vectorizer = TfidfVectorizer(ngram_range=(1, 1), max_df=0.7, min_df=2, max_features=1000)
+    
+    print "Load data..."
     train = load_data('general_data/train.txt')
+   
+    print "Data dimensions:", train.shape
+    print "List features:", train.columns.values
+    print "First review:", train["label"][0], "|", train["text"][0]
+    
     train_text = train["text"].values
     vectorizer.fit(train_text)
     X_train = vectorizer.transform(train_text)
@@ -98,6 +106,7 @@ def create_model():
     y_train = train["label"]
     joblib.dump(vectorizer, 'model/vectorizer.pkl')
     fit1(X_train, y_train)
+    print "Done"
 
 def fit1(X_train,y_train):
     svm = SVC(kernel='rbf', C=1000)
@@ -127,14 +136,13 @@ def predict_ex(mes):
     return s
 
 def train_main():
-    vectorizer = TfidfVectorizer(ngram_range=(1, 1), max_df=0.7, min_df=2, max_features=1000)
+    vectorizer = TfidfVectorizer(ngram_range=(1, 1), max_df=0.7, min_df=2, max_features=None) 
     train = load_data('general_data/train.txt')
     test = load_data('general_data/test.txt')
-    print test
 
     print "Data dimensions:", train.shape
     print "List features:", train.columns.values
-    print "First review:", train["label"][392], "|", train["text"][392]
+    print "First review:", train["label"][0], "|", train["text"][0]
 
     print "Data dimensions:", test.shape
     print "List features:", test.columns.values
@@ -160,7 +168,7 @@ def train_main():
     t0 = time.time()
     # iterate over classifiers
 
-    clf = SVC(kernel='rbf', C=1000)
+    clf = SVC(kernel='rbf', C=500)
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     # print y_pred
@@ -170,10 +178,17 @@ def train_main():
     print "confuse matrix: \n", confusion_matrix(y_test, y_pred, labels=["EVENT", "NEVENT"])
 
 if __name__ == '__main__':
-    # train_main()
+    mode = ' '.join(sys.argv[1:])
 
-    create_model()
+    if mode == "train":
+        train_main()
     
-    # mes = raw_input("Custom input: ")
-    # kq = predict_ex(mes)
-    # print "Result: " + kq
+    elif mode == "model":
+        create_model()
+    
+    elif mode == "custom_input":
+        mes = raw_input("Custom input: ")
+        kq = predict_ex(mes)
+        print "Result: " + kq
+    else:
+        print "Error argument!"
